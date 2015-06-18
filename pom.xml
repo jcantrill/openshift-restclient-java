@@ -107,6 +107,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.eclipse.jetty.spdy</groupId>
+			<artifactId>spdy-http-client-transport</artifactId>
+			<version>9.2.5.v20141112</version>
+		</dependency>
+		<dependency>
 			<groupId>org.jboss</groupId>
 			<artifactId>jboss-dmr</artifactId>
 			<version>1.2.0.Final</version>

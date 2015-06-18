@@ -115,6 +115,9 @@ public class URLBuilder {
 		return mapping.contains("v1beta1");
 	}
 
+	/*
+	 *  "/v1/namespaces/foo/builds/mybuild?param
+	 */
 	private void buildWithNamespaceInPath(StringBuilder url) {
 		url.append("/")
 			.append(typeMappings.get(kind));
