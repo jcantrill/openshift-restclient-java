@@ -39,9 +39,6 @@ public interface IResourceFactory {
 	 */
 	<T extends IResource> T create(String response) ;
 
-	@Deprecated
-	IResource create(String response, boolean strict) ;
-
 	/**
 	 * Create a resource from a response string
 	 * @param input Read the given input stream which assumes the input
@@ -51,9 +48,6 @@ public interface IResourceFactory {
 	 */
 	<T extends IResource> T create(InputStream input) ;
 
-	@Deprecated
-	IResource create(InputStream input, boolean strict) ;
-
 	/**
 	 * Create(or stub) a resource for a given version and kind
 	 * @param version
@@ -61,9 +55,6 @@ public interface IResourceFactory {
 	 * @return
 	 */
 	<T extends IResource> T create(String version, String kind);
-
-	@Deprecated
-	IResource create(String version, String kind, boolean strict);
 
 	/**
 	 * Stub out the given resource kind using a version determined by the factory

@@ -74,7 +74,7 @@ public class KubernetesResource implements IResource, ResourcePropertyKeys {
 		return Collections.unmodifiableSet(capabilities.keySet());
 	}
 	
-	protected Map<Class<? extends ICapability>, ICapability> getModifiableCapabilities(){
+	public Map<Class<? extends ICapability>, ICapability> getModifiableCapabilities(){
 		return capabilities;
 	}
 	

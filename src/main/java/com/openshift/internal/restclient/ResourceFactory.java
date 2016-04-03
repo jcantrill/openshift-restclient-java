@@ -24,7 +24,6 @@ import org.jboss.dmr.ModelNode;
 
 import com.openshift.internal.restclient.model.Build;
 import com.openshift.internal.restclient.model.BuildConfig;
-import com.openshift.internal.restclient.model.Config;
 import com.openshift.internal.restclient.model.DeploymentConfig;
 import com.openshift.internal.restclient.model.ImageStream;
 import com.openshift.internal.restclient.model.KubernetesEvent;
@@ -77,7 +76,6 @@ public class ResourceFactory implements IResourceFactory{
 		IMPL_MAP.put(ResourceKind.BUILD, Build.class);
 		IMPL_MAP.put(ResourceKind.BUILD_CONFIG, BuildConfig.class);
 		IMPL_MAP.put(ResourceKind.BUILD_REQUEST, BuildRequest.class);
-		IMPL_MAP.put(ResourceKind.CONFIG, Config.class);
 		IMPL_MAP.put(ResourceKind.DEPLOYMENT_CONFIG, DeploymentConfig.class);
 		IMPL_MAP.put(ResourceKind.IMAGE_STREAM, ImageStream.class);
 		IMPL_MAP.put(ResourceKind.IMAGE_STREAM_IMPORT, ImageStreamImport.class);
@@ -141,22 +139,16 @@ public class ResourceFactory implements IResourceFactory{
 	private List<IResource> buildList(final String version, List<ModelNode> items, String kind) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		List<IResource> resources = new ArrayList<IResource>(items.size());
 		for (ModelNode item : items) {
-			resources.add(create(item, version, kind, false));
+			resources.add(create(item, version, kind));
 		}
 		return resources;
 	}
 	
 	@Override
-	@SuppressWarnings("unchecked")
 	public <T extends IResource> T create(InputStream input) {
-		return (T) create(input, false);
-	}
-
-	@Override
-	public IResource create(InputStream input, boolean strict) {
 		try {
 			String resource = IOUtils.toString(input, "UTF-8");
-			return create(resource, strict);
+			return create(resource);
 		} catch (IOException e) {
 			throw new ResourceFactoryException(e, "There was an exception creating the resource from the InputStream");
 		}
@@ -166,16 +158,11 @@ public class ResourceFactory implements IResourceFactory{
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T extends IResource> T create(String response) {
-		return (T) create(response, false);
-	}
-
-	@Override
-	public IResource create(String response, boolean strict) {
 		try {
 			ModelNode node = ModelNode.fromJSONString(response);
 			String version = node.get(APIVERSION).asString();
 			String kind = node.get(KIND).asString();
-			return create(node, version, kind, strict);
+			return (T) create(node, version, kind);
 		} catch (UnsupportedVersionException e) {
 			throw e;
 		}catch(Exception e) {
@@ -187,15 +174,10 @@ public class ResourceFactory implements IResourceFactory{
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T extends IResource> T create(String version, String kind) {
-		return (T) create(version, kind, false);
+		return (T) create(new ModelNode(), version, kind);
 	}
 
-	@Override
-	public IResource create(String version, String kind, boolean strict) {
-		return create(new ModelNode(), version, kind, strict);
-	}
-
-	private IResource create(ModelNode node, String version, String kind, boolean strict) {
+	private IResource create(ModelNode node, String version, String kind) {
 		try {
 			node.get(APIVERSION).set(version);
 			node.get(KIND).set(kind.toString());
@@ -220,7 +202,7 @@ public class ResourceFactory implements IResourceFactory{
 	public <T extends IResource> T stub(String kind, String name, String namespace) {
 		//TODO get k8e or os
 		String version = client.getOpenShiftAPIVersion();
-		KubernetesResource resource = (KubernetesResource) create(version, kind, true);
+		KubernetesResource resource = (KubernetesResource) create(version, kind);
 		resource.setName(name);
 		if(StringUtils.isNotEmpty(namespace)) {
 			resource.setNamespace(namespace);

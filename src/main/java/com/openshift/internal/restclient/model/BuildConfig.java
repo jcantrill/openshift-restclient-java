@@ -145,7 +145,7 @@ public class BuildConfig extends KubernetesResource implements IBuildConfig {
 			IImageChangeTrigger image = (IImageChangeTrigger)trigger;
 			triggerNode.get(getPath(BUILD_CONFIG_IMAGECHANGE_IMAGE)).set(defaultIfNull(image.getImage()));
 			triggerNode.get(getPath(BUILD_CONFIG_IMAGECHANGE_NAME)).set(defaultIfNull(image.getFrom()));
-			triggerNode.get(getPath(BUILD_CONFIG_IMAGECHANGE_TAG)).set(StringUtils.defaultIfBlank(image.getTag(), ""));
+			triggerNode.get(getPath(BUILD_CONFIG_IMAGECHANGE_TAG)).set(StringUtils.defaultIfEmpty(image.getTag(), ""));
 			break;
 		}
 		triggerNode.get("type").set(trigger.getType());

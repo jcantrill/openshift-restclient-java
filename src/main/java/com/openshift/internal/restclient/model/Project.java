@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jboss.dmr.ModelNode;
 
 import com.openshift.restclient.IClient;
+import com.openshift.restclient.model.IOpenShiftAnnotations;
 import com.openshift.restclient.model.IProject;
 import com.openshift.restclient.model.IResource;
 
@@ -25,10 +26,7 @@ import com.openshift.restclient.model.IResource;
  * DMR implementation of a project
  * @author Jeff Cantrill
  */
-public class Project extends KubernetesResource implements IProject{
-	
-	private static final String ANNOTATION_DISPLAY_NAME = "openshift.io/display-name";
-	private static final String ANNOTATION_DESCRIPTION = "openshift.io/description";
+public class Project extends KubernetesResource implements IProject, IOpenShiftAnnotations{
 	
 	public Project(ModelNode node, IClient client, Map<String, String []> propertyKeys) {
 		super(node, client, propertyKeys);
@@ -51,23 +49,23 @@ public class Project extends KubernetesResource implements IProject{
 
 	@Override
 	public String getDisplayName(){
-		return getAnnotation(ANNOTATION_DISPLAY_NAME);
+		return getAnnotation(DISPLAY_NAME);
 	}
 	
 	public void setDisplayName(String name) {
-		setAnnotation(ANNOTATION_DISPLAY_NAME, name);
+		setAnnotation(DISPLAY_NAME, name);
 	}
 	
 
 	@Override
 	public String getDescription() {
-		return getAnnotation(ANNOTATION_DESCRIPTION);
+		return getAnnotation(DESCRIPTION);
 	}
 
 
 	@Override
 	public void setDescription(String value) {
-		setAnnotation(ANNOTATION_DESCRIPTION, value);
+		setAnnotation(DESCRIPTION, value);
 	}
 
 
