@@ -9,6 +9,7 @@
 package com.openshift.internal.restclient;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.net.MalformedURLException;
 import java.util.List;
@@ -27,6 +28,7 @@ import com.openshift.restclient.ResourceKind;
 import com.openshift.restclient.model.IProject;
 import com.openshift.restclient.model.IResource;
 import com.openshift.restclient.model.template.ITemplate;
+import com.openshift.restclient.model.user.IUser;
 import com.openshift.restclient.utils.Samples;
 
 /**
@@ -47,6 +49,12 @@ public class DefaultClientIntegrationTest {
 	public void setup () {
 		client = helper.createClientForBasicAuth();
 		factory = new ResourceFactory(client);
+	}
+	
+	@Test
+	public void testGetCurrentUser() {
+		IUser user = client.getCurrentUser();
+		assertNotNull("Exp. current user not to be null", user);
 	}
 	
 	@Test

@@ -41,6 +41,7 @@ import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.openshift.api.model.Project;
 import io.fabric8.openshift.api.model.ProjectRequest;
+import io.fabric8.openshift.api.model.User;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.EditableOpenShiftConfig;
 import io.fabric8.openshift.client.OpenShiftClient;
@@ -156,9 +157,15 @@ public class OpenShiftClientAdapter implements IClient {
 	}
 
 	@Override
-	public IList get(String kind, String namesplistace) {
-		// TODO Auto-generated method stub
-		return null;
+	public IList get(String kind, String namespace) {
+		try {
+			KubernetesResourceList list = (KubernetesResourceList) new OperationsBuilder(client, kind)
+			.inNameSpace(namespace)
+			.list();
+			return (IList) factory.create(list);
+		} catch (Exception e) {
+			throw new OpenShiftException(e, "Unable to list %s/%s", namespace, kind);
+		}
 	}
 	
 	private IResource updateIResource(IResource instance, HasMetadata fabric8) {
@@ -199,6 +206,13 @@ public class OpenShiftClientAdapter implements IClient {
 	}
 
 	@Override
+	public <T extends IResource> T create(String kind, String namespace, String name, String subresource,
+			IResource payload) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public <T extends IResource> T create(T instance) {
 		return create(instance, instance.getNamespace());
 	}
@@ -231,12 +245,6 @@ public class OpenShiftClientAdapter implements IClient {
 				throw new OpenShiftException(e, "Unable to create %s", resource);
 			}
 		}
-	}
-
-	@Override
-	public <T extends IResource> T create(String kind, String namespace, String name, String subresource, IResource payload) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -330,8 +338,8 @@ public class OpenShiftClientAdapter implements IClient {
 
 	@Override
 	public IUser getCurrentUser() {
-		// TODO Auto-generated method stub
-		return null;
+		User user = client.users().withName("~").get();
+		return factory.create(user);
 	}
 
 }

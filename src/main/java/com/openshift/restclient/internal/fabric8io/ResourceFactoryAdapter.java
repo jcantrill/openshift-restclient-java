@@ -27,9 +27,11 @@ import com.openshift.restclient.IResourceFactory;
 import com.openshift.restclient.OpenShiftException;
 import com.openshift.restclient.capability.resources.IFabric8ioResourceCapability;
 import com.openshift.restclient.internal.fabric8io.model.HasMetadataImpl;
+import com.openshift.restclient.model.IList;
 import com.openshift.restclient.model.IResource;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 
 public class ResourceFactoryAdapter implements IResourceFactory {
 	
@@ -86,6 +88,18 @@ public class ResourceFactoryAdapter implements IResourceFactory {
 		return (T) resource;
 	}
 	
+	@SuppressWarnings("rawtypes")
+	public IList create(KubernetesResourceList list) {
+		try {
+			KubernetesResource resource = dmrFactory.create(mapper.writeValueAsString(list));
+			addCapabilities(resource);
+			return (IList) resource;
+		} catch (JsonProcessingException e) {
+			throw new OpenShiftException(e, "Unable to create resource from %s", list);
+		}
+	}
+
+	
 	private void addCapabilities(IResource resource) {
 		if(resource instanceof KubernetesResource) {
 			KubernetesResource dmrResource = (KubernetesResource) resource;
@@ -115,6 +129,7 @@ public class ResourceFactoryAdapter implements IResourceFactory {
 	@Override
 	public void setClient(IClient client) {
 		this.client = client;
+		this.dmrFactory.setClient(client);
 	}
 	
 	public static Class<?> classForKind(String kind){

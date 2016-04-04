@@ -9,6 +9,7 @@
 package com.openshift.internal.restclient;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.net.MalformedURLException;
 import java.util.List;
@@ -27,9 +28,11 @@ import com.openshift.restclient.IClient;
 import com.openshift.restclient.ResourceKind;
 import com.openshift.restclient.authorization.BasicAuthorizationStrategy;
 import com.openshift.restclient.internal.fabric8io.ResourceFactoryAdapter;
+import com.openshift.restclient.model.IList;
 import com.openshift.restclient.model.IProject;
 import com.openshift.restclient.model.IResource;
 import com.openshift.restclient.model.template.ITemplate;
+import com.openshift.restclient.model.user.IUser;
 import com.openshift.restclient.utils.Samples;
 
 /**
@@ -54,6 +57,13 @@ public class OpenShiftClientAdapterIntegrationTest {
 			.authStrategy(new BasicAuthorizationStrategy(helper.getDefaultClusterAdminUser(), helper.getDefaultClusterAdminPassword(), ""))
 			.build(ClientType.FABRIC8IO);
 		
+	}
+	
+	@Test
+	public void testGetCurrentUser() {
+		IUser user = client.getCurrentUser();
+		assertNotNull("Exp. current user not to be null", user);
+		assertEquals(user.getName(), helper.getDefaultClusterAdminUser());
 	}
 	
 	@Test
@@ -120,6 +130,7 @@ public class OpenShiftClientAdapterIntegrationTest {
 			LOG.debug(String.format("Creating service: %s", service));
 			service = client.create(service);
 			LOG.debug(String.format("Created service: %s", service));
+			assertNotNull(service.getClient());
 			
 			LOG.debug(String.format("Creating service: %s", otherService));
 			otherService = client.create(otherService);
@@ -144,6 +155,11 @@ public class OpenShiftClientAdapterIntegrationTest {
 			
 			assertEquals("Expected there to be only one service returned", 1, services.size());
 			assertEquals("Expected to get the service with the correct name", service.getName(), services.get(0).getName());
+			
+			IList serviceList = client.get(ResourceKind.SERVICE, project.getName());
+			assertNotNull(serviceList);
+			assertEquals(services.size(), serviceList.getItems().size());
+			
 		}finally{
 			cleanUpResource(client, service);
 			cleanUpResource(client, otherService);
