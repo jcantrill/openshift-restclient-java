@@ -54,7 +54,7 @@ public class ClientBuilder {
 		return this;
 	}
 
-	public ClientBuilder resourceFactory(IAuthorizationStrategy authStrategy) {
+	public ClientBuilder authStrategy(IAuthorizationStrategy authStrategy) {
 		this.authStrategy = authStrategy;
 		return this;
 	}
@@ -93,7 +93,7 @@ public class ClientBuilder {
 		return aDefault;
 	}
 	
-	enum ClientType{
+	public enum ClientType{
 		DEFAULT,
 		FABRIC8IO
 	}

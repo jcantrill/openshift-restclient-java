@@ -41,6 +41,7 @@ public enum Samples {
 	V1_SERVICE_ACCOUNT("openshift3/v1_service_account.json"),
 	V1_Status("openshift3/v1_status.json"),
 	V1_TEMPLATE("openshift3/v1_template.json"), 
+	V1_TEMPLATE_ALT("openshift3/v1_template_with_all_v1.json"), 
 	V1_USER("openshift3/v1_user.json"),
 	V1_SECRET("openshift3/v1_secret.json"),
 	V1_UNRECOGNIZED("openshift3/v1_unrecognized.json");

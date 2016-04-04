@@ -21,11 +21,11 @@ import org.slf4j.LoggerFactory;
 import com.openshift.internal.restclient.model.Project;
 import com.openshift.internal.restclient.model.Service;
 import com.openshift.internal.restclient.model.template.Template;
+import com.openshift.restclient.ClientBuilder;
+import com.openshift.restclient.ClientBuilder.ClientType;
 import com.openshift.restclient.IClient;
-import com.openshift.restclient.IResourceFactory;
 import com.openshift.restclient.ResourceKind;
 import com.openshift.restclient.authorization.BasicAuthorizationStrategy;
-import com.openshift.restclient.internal.fabric8io.OpenShiftClientAdapter;
 import com.openshift.restclient.internal.fabric8io.ResourceFactoryAdapter;
 import com.openshift.restclient.model.IProject;
 import com.openshift.restclient.model.IResource;
@@ -41,7 +41,7 @@ public class OpenShiftClientAdapterIntegrationTest {
 
 	private static final Logger LOG = LoggerFactory.getLogger(OpenShiftClientAdapterIntegrationTest.class);
 	
-	private OpenShiftClientAdapter client;
+	private IClient client;
 	private IntegrationTestHelper helper = new IntegrationTestHelper();
 
 	private ResourceFactoryAdapter factory;
@@ -49,34 +49,37 @@ public class OpenShiftClientAdapterIntegrationTest {
 	@Before
 	public void setup () {
 		factory = new ResourceFactoryAdapter(new ResourceFactory(null));
-		client = new OpenShiftClientAdapter(helper.getServerUrl(), null, null, null, factory);
-		client.setAuthorizationStrategy(new BasicAuthorizationStrategy("admin", "asdfasf", ""));
+		client = new ClientBuilder(helper.getServerUrl())
+			.resourceFactory(factory)
+			.authStrategy(new BasicAuthorizationStrategy(helper.getDefaultClusterAdminUser(), helper.getDefaultClusterAdminPassword(), ""))
+			.build(ClientType.FABRIC8IO);
+		
 	}
 	
-//	@Test
-//	public void testListTemplates(){
-//		Template template = null; 
-//		Project project = null;
-//		
-//		try {
-//			project = factory.create(VERSION, ResourceKind.PROJECT);
-//			project.setName(helper.generateNamespace());
-//			template = factory.create(Samples.V1_TEMPLATE.getContentAsString());
-//			template.setNamespace(project.getName());
-//			
-//			project = client.create(project);
-//			template = client.create(template, project.getNamespace());
-//			
-//			List<ITemplate> list = client.list(ResourceKind.TEMPLATE, project.getName());
-//			assertEquals(1, list.size());
-//			for (ITemplate t : list) {
-//				LOG.debug(t.toString());
-//			}
-//		} finally {
-//			cleanUpResource(client, template);
-//			cleanUpResource(client, project);
-//		}
-//	}
+	@Test
+	public void testListTemplates(){
+		Template template = null; 
+		Project project = null;
+		
+		try {
+			project = factory.create(VERSION, ResourceKind.PROJECT);
+			project.setName(helper.generateNamespace());
+			template = factory.create(Samples.V1_TEMPLATE_ALT.getContentAsString());
+			template.setNamespace(project.getName());
+			
+			project = client.create(project);
+			template = client.create(template, project.getNamespace());
+			
+			List<ITemplate> list = client.list(ResourceKind.TEMPLATE, project.getName());
+			assertEquals(1, list.size());
+			for (ITemplate t : list) {
+				LOG.debug(t.toString());
+			}
+		} finally {
+			cleanUpResource(client, template);
+			cleanUpResource(client, project);
+		}
+	}
 	
 	@Test
 	public void testResourceLifeCycle() throws MalformedURLException {

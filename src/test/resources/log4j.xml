@@ -10,11 +10,15 @@
 	</appender>
 
 	<logger name="com.openshift">
-		<level value="debug" />
+		<level value="DEBUG" />
+	</logger>
+
+	<logger name="com.squareup.okhttp.logging.HttpLoggingInterceptor">
+		<level value="OFF" />
 	</logger>
 
 	<root>
-		<level value="debug" />
+		<level value="DEBUG" />
 		<appender-ref ref="STDOUT" />
 	</root>
 </log4j:configuration>

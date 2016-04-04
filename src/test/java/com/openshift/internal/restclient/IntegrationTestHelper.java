@@ -8,10 +8,7 @@
  ******************************************************************************/
 package com.openshift.internal.restclient;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Properties;
 import java.util.Random;
 
@@ -19,13 +16,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.openshift.restclient.ClientBuilder;
+import com.openshift.restclient.ClientBuilder.ClientType;
 import com.openshift.restclient.IClient;
-import com.openshift.restclient.NoopSSLCertificateCallback;
 import com.openshift.restclient.authorization.AuthorizationClientFactory;
 import com.openshift.restclient.authorization.BasicAuthorizationStrategy;
 import com.openshift.restclient.authorization.IAuthorizationClient;
 import com.openshift.restclient.authorization.IAuthorizationContext;
-import com.openshift.restclient.authorization.IAuthorizationDetails;
 import com.openshift.restclient.authorization.TokenAuthorizationStrategy;
 import com.openshift.restclient.model.IResource;
 
@@ -51,13 +47,21 @@ public class IntegrationTestHelper {
 	public IntegrationTestHelper() {
 		this.prop = loadProperties(INTEGRATIONTEST_PROPERTIES);
 	}
-
+	
 	public IClient createClient(){
+		return createClient(ClientType.DEFAULT);
+	}
+	
+	public IClient createClient(ClientBuilder.ClientType type){
 		return new ClientBuilder(prop.getProperty(KEY_SERVER_URL)).build();
 	}
 
 	public IClient createClientForBasicAuth() {
-		IClient client = createClient();
+		return createClientForBasicAuth(ClientType.DEFAULT);
+	}
+	
+	public IClient createClientForBasicAuth(ClientBuilder.ClientType type) {
+		IClient client = createClient(type);
 		final String user = getDefaultClusterAdminUser();
 		final String password = getDefaultClusterAdminPassword();
 		client.setAuthorizationStrategy(new BasicAuthorizationStrategy(user, password, ""));
