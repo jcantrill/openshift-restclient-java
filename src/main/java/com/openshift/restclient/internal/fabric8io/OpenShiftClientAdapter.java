@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.openshift.restclient.IAdaptable;
+import com.openshift.restclient.IAuthorizeable;
 import com.openshift.restclient.IClient;
 import com.openshift.restclient.IOpenShiftWatchListener;
 import com.openshift.restclient.IResourceFactory;
@@ -27,7 +29,9 @@ import com.openshift.restclient.authorization.IAuthorizationContext;
 import com.openshift.restclient.authorization.IAuthorizationDetails;
 import com.openshift.restclient.authorization.IAuthorizationStrategy;
 import com.openshift.restclient.authorization.IAuthorizationStrategyVisitor;
+import com.openshift.restclient.authorization.ResourceForbiddenException;
 import com.openshift.restclient.authorization.TokenAuthorizationStrategy;
+import com.openshift.restclient.authorization.UnauthorizedException;
 import com.openshift.restclient.capability.CapabilityVisitor;
 import com.openshift.restclient.capability.ICapability;
 import com.openshift.restclient.capability.resources.IFabric8ioResourceCapability;
@@ -39,6 +43,7 @@ import com.openshift.restclient.model.user.IUser;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.openshift.api.model.Project;
 import io.fabric8.openshift.api.model.ProjectRequest;
 import io.fabric8.openshift.api.model.User;
@@ -62,14 +67,14 @@ public class OpenShiftClientAdapter implements IClient {
 		config = new OpenShiftConfigBuilder()
 				.withMasterUrl(baseUrl)
 				.withTrustCerts(true) //config sslCertCallback
-				.withConnectionTimeout(30)
+				.withConnectionTimeout(30 * 1000) //30 sec?
 				.build();
-		client = new DefaultOpenShiftClient(config);
+		resetOpenShiftClient();
 		factory.setClient(this);
 	}
 	
-	public OpenShiftClient getOpenShiftClient(){
-		return client;
+	private void resetOpenShiftClient() {
+		client = new DefaultOpenShiftClient(config);
 	}
 	
 	@Override
@@ -92,7 +97,7 @@ public class OpenShiftClientAdapter implements IClient {
 
 	@Override
 	public IAuthorizationContext getContext(String baseURL) {
-		// TODO Auto-generated method stub
+		getCurrentUser();
 		return null;
 	}
 
@@ -107,10 +112,37 @@ public class OpenShiftClientAdapter implements IClient {
 		// TODO Auto-generated method stub
 
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T> T adapt(Class<T> klass) {
+		if(IAuthorizeable.class.isAssignableFrom(klass)) {
+			return (T) new IAuthorizeable() {
+				
+				@Override
+				public void authorize() throws UnauthorizedException {
+					try {
+						getCurrentUser();
+					}catch(KubernetesClientException e) {
+						if(e.getMessage().contains("Forbidden")) {
+							throw new ResourceForbiddenException("The oauth token may have expired or was not provided", e);
+						}
+						throw e;
+					}
+				}
+			};
+		}
+		return null;
+	}
+
+	@Override
+	public boolean isAdatable(Class<?> klass) {
+		return IAuthorizeable.class.isAssignableFrom(klass);
+	}
 
 	@Override
 	public IWatcher watch(String namespace, IOpenShiftWatchListener listener, String... kinds) {
-		return null;
+		return new OpenShiftClientWatcher(client, listener).watch(kinds);
 	}
 
 	@Override
@@ -309,6 +341,7 @@ public class OpenShiftClientAdapter implements IClient {
 
 	@Override
 	public void setAuthorizationStrategy(IAuthorizationStrategy strategy) {
+		if(strategy == null) return;
 		this.authStrategy = strategy;
 		config.setUsername(strategy.getUsername());
 		strategy.accept(new IAuthorizationStrategyVisitor() {
@@ -324,6 +357,7 @@ public class OpenShiftClientAdapter implements IClient {
 				config.setOauthToken(strategy.getToken());
 			}
 		});
+		resetOpenShiftClient();
 	}
 
 	@Override

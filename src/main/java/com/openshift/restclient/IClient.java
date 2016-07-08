@@ -27,7 +27,7 @@ import com.openshift.restclient.model.user.IUser;
  * @author Jeff Cantrill
  *
  */
-public interface IClient extends ICapable, IAuthorizationClient{
+public interface IClient extends ICapable, IAuthorizationClient, IAdaptable{
 	
 	IWatcher watch(String namespace, IOpenShiftWatchListener listener, String...kinds);
 	

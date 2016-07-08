@@ -13,6 +13,7 @@ import com.openshift.restclient.ISSLCertificateCallback;
 /**
  * @author Jeff Cantrill
  */
+@Deprecated
 public interface IAuthorizationClient {
 
 	/**

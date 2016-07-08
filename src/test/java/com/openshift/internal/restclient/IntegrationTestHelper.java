@@ -53,7 +53,7 @@ public class IntegrationTestHelper {
 	}
 	
 	public IClient createClient(ClientBuilder.ClientType type){
-		return new ClientBuilder(prop.getProperty(KEY_SERVER_URL)).build();
+		return new ClientBuilder(prop.getProperty(KEY_SERVER_URL)).build(type);
 	}
 
 	public IClient createClientForBasicAuth() {

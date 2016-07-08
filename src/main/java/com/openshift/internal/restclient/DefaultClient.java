@@ -114,6 +114,16 @@ public class DefaultClient implements IClient, IHttpConstants{
 	}
 	
 	@Override
+	public <T> T adapt(Class<T> klass) {
+		return null;
+	}
+
+	@Override
+	public boolean isAdatable(Class<?> klass) {
+		return false;
+	}
+
+	@Override
 	public IResourceFactory getResourceFactory() {
 		return factory;
 	};
